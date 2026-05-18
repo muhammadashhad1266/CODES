@@ -12,7 +12,7 @@ string fname = "Electricity bill ledger.csv"; // using a variable so don't need 
 const string RED = "\033[31m";  // for red colour {Errors}
 const string RESET = "\033[0m"; // for reseting colours
 
-voiinclude <iostream> // for cout and cin
+void initializeDatabasinclude <iostream> // for cout and cin
 #include <stdlib.h> //  for exit and system
 #include <fstream>  // for file handling ofstream and ifstream
 #include <sstream>  // for string stream
