@@ -11,11 +11,11 @@ string fname = "Electricity bill ledger.csv"; // using a variable so don't need 
 const string RED = "\033[31m";  // for red colour {Errors}
 const string RESET = "\033[0m"; // for reseting colours
 
-void initializeDatabase(); // checks file exists else create it.
-bool isUnique(string id);  // checks if consumer id is unique
-void appendRecord();       // adds a new comma separated record to the end of the CSV file
-void searchByID();         // performs a search to find and return a specific record
-void updateRecord();       // modifies or deletes an entry
+void initializeDatabase();    // checks file exists else create it.
+bool isUnique(string id);     // checks if consumer id is unique
+void appendRecord();          // adds a new comma separated record to the end of the CSV file
+string searchByID(string id); // performs a search to find and return a specific record
+void updateRecord();          // modifies or deletes an entry
 bool parse(string line, string &id, string &name, string &unit);
 
 int main()
@@ -41,7 +41,10 @@ int main()
         }
         else if (choice == 2)
         {
-            searchByID();
+            string id; // getting the id to be checked
+            cout << "Enter Consumer ID: ";
+            cin >> id;
+            searchByID(id);
         }
         else if (choice == 3)
         {
@@ -152,24 +155,20 @@ void appendRecord()
     fout.close();
 }
 
-void searchByID()
+string searchByID(string id)
 {
-    string id; // getting the id to be checked
-    cout << "Enter Consumer ID: ";
-    cin >> id;
-
     ifstream fin(fname);
     if (!fin.is_open())
     {
         cout << RED << "File is missing or unreadable" << RESET << endl;
-        return;
+        return "";
     }
 
     string line, consumerId, name, unit;
     if (!getline(fin, line)) // skip header
     {
         cout << RED << "File is empty or missing header" << RESET << endl;
-        return;
+        return "";
     }
 
     while (getline(fin, line))
@@ -181,10 +180,11 @@ void searchByID()
         if (consumerId == id) // check if consumerId is unique
         {
             cout << "Found record: " << line << endl;
-            return;
+            return line;
         }
     }
     cout << RED << "Record not found" << RESET << endl;
+    return "";
 }
 
 void updateRecord()
@@ -192,4 +192,74 @@ void updateRecord()
     string id; // getting the id to be checked
     cout << "Enter Consumer ID: ";
     cin >> id;
+
+    // getting the string to be checked
+    string valid = searchByID(id);
+    if (valid.empty()) // check if record is found
+        return;
+
+    cout << "1) Update\n";
+    cout << "2) Delete\n";
+    cout << "Choose: ";
+
+    int option;
+    if (!(cin >> option))
+    {
+        cin.clear();
+        cin.ignore(10000, '\n');
+        return;
+    }
+
+    ifstream fin(fname);
+    if (!fin.is_open())
+    {
+        cout << RED << "File is missing or unreadable" << RESET << endl;
+        return;
+    }
+    string header;
+    if (!getline(fin, header)) // skip header
+    {
+        fin.close();
+        cout << RED << "File is empty or missing header" << RESET << endl;
+        return;
+    }
+
+    string temp_file = "temp.csv";
+    ofstream fout(temp_file);
+
+    fout << header << "\n"; // write header to temp file
+
+    string line, consumerId, name, unit;
+
+    while (getline(fin, line))
+    {
+        if (line.empty()) // skip empty lines
+            continue;
+        if (!parse(line, consumerId, name, unit)) // parse line and skip if data not found
+            continue;
+
+        if (consumerId == id && option == 2) // check if consumerId is unique
+        {
+            continue;
+        }
+        else if (consumerId == id && option == 1) // check if consumerId is unique
+        {
+            cout << "Enter Name: ";
+            cin.ignore(); // ignore newline
+            getline(cin, name);
+            cout << "Enter Unit: ";
+            cin >> unit;
+            fout << id << "," << name << "," << unit << endl;
+        }
+        else
+        {
+            fout << line << endl;
+        }
+    }
+
+    fin.close();
+    fout.close();
+
+    remove(fname.c_str());
+    rename(temp_file.c_str(), fname.c_str());
 }
