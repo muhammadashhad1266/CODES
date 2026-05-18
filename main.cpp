@@ -102,6 +102,8 @@ bool isUnique(string id)
             return false;
         }
     }
+    fin.close();
+    return true;
 }
 
 bool parse(string line, string &id, string &name, string &unit)
@@ -126,12 +128,68 @@ bool parse(string line, string &id, string &name, string &unit)
 
 void appendRecord()
 {
+    string id, name, unit;
+    cout << "Enter Consumer ID: ";
+    cin >> id;
+    cout << "Enter Name: ";
+    cin.ignore(); // ignore newline
+    getline(cin, name);
+    cout << "Enter Unit: ";
+    cin >> unit;
+
+    // check if id is unique
+    if (isUnique(id) == false)
+        return;
+
+    // add record
+    ofstream fout(fname, ios::app); // open file in append mode
+    if (!fout.is_open())
+    {
+        cout << RED << "File is missing or unreadable" << RESET << endl;
+        return;
+    }
+    fout << id << "," << name << "," << unit << endl;
+    fout.close();
 }
 
 void searchByID()
 {
+    string id; // getting the id to be checked
+    cout << "Enter Consumer ID: ";
+    cin >> id;
+
+    ifstream fin(fname);
+    if (!fin.is_open())
+    {
+        cout << RED << "File is missing or unreadable" << RESET << endl;
+        return;
+    }
+
+    string line, consumerId, name, unit;
+    if (!getline(fin, line)) // skip header
+    {
+        cout << RED << "File is empty or missing header" << RESET << endl;
+        return;
+    }
+
+    while (getline(fin, line))
+    {
+        if (line.empty()) // skip empty lines
+            continue;
+        if (!parse(line, consumerId, name, unit)) // parse line and skip if data not found
+            continue;
+        if (consumerId == id) // check if consumerId is unique
+        {
+            cout << "Found record: " << line << endl;
+            return;
+        }
+    }
+    cout << RED << "Record not found" << RESET << endl;
 }
 
 void updateRecord()
 {
+    string id; // getting the id to be checked
+    cout << "Enter Consumer ID: ";
+    cin >> id;
 }
