@@ -1,8 +1,23 @@
-#include <iostream> // for cout and cin
+#de <iostream> // for cout and cin
 #include <stdlib.h> //  for exit and system
 #include <fstream>  // for file handling ofstream and ifstream
 #include <sstream>  // for string stream
 #include <string>   // for string class
+#include <iomanip>
+
+using namespace std;
+
+string fname = "Electricity bill ledger.csv"; // using a variable so don't need to change everywhere.
+
+const string RED = "\033[31m";  // for red colour {Errors}
+const string RESET = "\033[0m"; // for reseting colours
+
+voiinclude <iostream> // for cout and cin
+#include <stdlib.h> //  for exit and system
+#include <fstream>  // for file handling ofstream and ifstream
+#include <sstream>  // for string stream
+#include <string>   // for string class
+#include <iomanip>
 
 using namespace std;
 
@@ -17,6 +32,7 @@ void appendRecord();          // adds a new comma separated record to the end of
 string searchByID(string id); // performs a search to find and return a specific record
 void updateRecord();          // modifies or deletes an entry
 bool parse(string line, string &id, string &name, string &unit);
+void DisplayCSV();
 
 int main()
 {
@@ -26,7 +42,7 @@ int main()
     while (true)
     {
         // step 2: user interaction {menu}
-        cout << "\n=== Electricity Bill Ledger (CSV) ===\n1) Write/Add Consumer\n2) Search by Consumer ID\n3) Update/Delete Consumer\n4) Exit\nChoose: ";
+        cout << "\n=== Electricity Bill Ledger (CSV) ===\n1) Write/Add Consumer\n2) Search by Consumer ID\n3) Update/Delete Consumer\n4) Display CSV\n5) Exit\nChoose: ";
 
         int choice;
         if (!(cin >> choice)) // // checking for newline characrter or invalid characters
@@ -51,6 +67,10 @@ int main()
             updateRecord();
         }
         else if (choice == 4)
+        {
+            DisplayCSV();
+        }
+        else if (choice == 5)
         {
             break;
         }
@@ -262,4 +282,23 @@ void updateRecord()
 
     remove(fname.c_str());
     rename(temp_file.c_str(), fname.c_str());
+}
+
+void DisplayCSV() // display the csv
+{
+    string line, consumerId, name, unit;
+    ifstream fin(fname);
+    if (!fin.is_open())
+    {
+        cout << RED << "File is missing or unreadable" << RESET << endl;
+        return;
+    }
+
+    while (getline(fin, line))
+    {
+        if (line.empty()) continue;
+        if (parse(line, consumerId, name, unit))
+            cout << left << setw(20) << consumerId << setw(40) << name << setw(10) << unit << endl;
+    }
+    fin.close();
 }
