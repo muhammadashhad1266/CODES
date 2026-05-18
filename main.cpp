@@ -1,23 +1,9 @@
-#de <iostream> // for cout and cin
+#include <iostream> // for cout and cin
 #include <stdlib.h> //  for exit and system
 #include <fstream>  // for file handling ofstream and ifstream
 #include <sstream>  // for string stream
 #include <string>   // for string class
-#include <iomanip>
-
-using namespace std;
-
-string fname = "Electricity bill ledger.csv"; // using a variable so don't need to change everywhere.
-
-const string RED = "\033[31m";  // for red colour {Errors}
-const string RESET = "\033[0m"; // for reseting colours
-
-void initializeDatabasinclude <iostream> // for cout and cin
-#include <stdlib.h> //  for exit and system
-#include <fstream>  // for file handling ofstream and ifstream
-#include <sstream>  // for string stream
-#include <string>   // for string class
-#include <iomanip>
+#include <iomanip> // for output manipulation
 
 using namespace std;
 
