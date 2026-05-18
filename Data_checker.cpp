@@ -11,16 +11,20 @@ using namespace std;
 static const string CSV_FILE = "electricity_bill_ledger.csv";
 static const string CSV_HEADER = "consumer_id,name,unit";
 
-static bool parseCSVLine(const string& line, string& consumerId, string& name, string& unit) {
+static bool parseCSVLine(const string &line, string &consumerId, string &name, string &unit)
+{
     // Simple CSV split (no quoted commas expected for this assignment)
     // Expected: consumer_id,name,unit
     string a, b, c;
     string token;
     stringstream ss(line);
 
-    if (!getline(ss, a, ',')) return false;
-    if (!getline(ss, b, ',')) return false;
-    if (!getline(ss, c, ',')) return false;
+    if (!getline(ss, a, ','))
+        return false;
+    if (!getline(ss, b, ','))
+        return false;
+    if (!getline(ss, c, ','))
+        return false;
 
     consumerId = a;
     name = b;
@@ -31,9 +35,11 @@ static bool parseCSVLine(const string& line, string& consumerId, string& name, s
 // Mandatory Generic Functions
 
 // initializeDatabase(): Checks for the CSV file and creates it with headers if it is missing.
-void initializeDatabase() {
+void initializeDatabase()
+{
     ifstream fin(CSV_FILE.c_str());
-    if (fin.good()) return; // exists
+    if (fin.good())
+        return; // exists
 
     ofstream fout(CSV_FILE.c_str(), ios::out);
     fout << CSV_HEADER << "\n";
@@ -41,19 +47,26 @@ void initializeDatabase() {
 }
 
 // isUnique(string id): Scans the CSV to prevent duplicate IDs during the "Write" process.
-bool isUnique(string id) {
+bool isUnique(string id)
+{
     ifstream fin(CSV_FILE.c_str());
-    if (!fin.is_open()) return true; // if missing/unreadable, treat as unique
+    if (!fin.is_open())
+        return true; // if missing/unreadable, treat as unique
 
     string line;
     // Skip header
-    if (!getline(fin, line)) return true;
+    if (!getline(fin, line))
+        return true;
 
     string consumerId, name, unit;
-    while (getline(fin, line)) {
-        if (line.empty()) continue;
-        if (!parseCSVLine(line, consumerId, name, unit)) continue;
-        if (consumerId == id) {
+    while (getline(fin, line))
+    {
+        if (line.empty())
+            continue;
+        if (!parseCSVLine(line, consumerId, name, unit))
+            continue;
+        if (consumerId == id)
+        {
             fin.close();
             return false;
         }
@@ -63,27 +76,35 @@ bool isUnique(string id) {
 }
 
 // appendRecord(string data): Adds a new comma-separated record to the end of the CSV file.
-void appendRecord(string data) {
+void appendRecord(string data)
+{
     ofstream fout(CSV_FILE.c_str(), ios::app);
     fout << data << "\n";
     fout.close();
 }
 
 // searchByID(string id): Performs a sequential search to find and return a specific record.
-string searchByID(string id) {
+string searchByID(string id)
+{
     ifstream fin(CSV_FILE.c_str());
-    if (!fin.is_open()) return "";
+    if (!fin.is_open())
+        return "";
 
     string line;
     // Skip header
-    if (!getline(fin, line)) return "";
+    if (!getline(fin, line))
+        return "";
 
     string consumerId, name, unit;
-    while (getline(fin, line)) {
-        if (line.empty()) continue;
-        if (!parseCSVLine(line, consumerId, name, unit)) continue;
+    while (getline(fin, line))
+    {
+        if (line.empty())
+            continue;
+        if (!parseCSVLine(line, consumerId, name, unit))
+            continue;
 
-        if (consumerId == id) {
+        if (consumerId == id)
+        {
             fin.close();
             return line; // return full CSV record line
         }
@@ -94,9 +115,11 @@ string searchByID(string id) {
 }
 
 // updateRecord(string id, string newData): Modifies or deletes an entry using a temporary file to maintain data integrity.
-void updateRecord(string id, string newData) {
+void updateRecord(string id, string newData)
+{
     ifstream fin(CSV_FILE.c_str());
-    if (!fin.is_open()) return;
+    if (!fin.is_open())
+        return;
 
     // Create temp file in same directory
     string tempFile = "electricity_bill_ledger_temp.csv";
@@ -104,7 +127,8 @@ void updateRecord(string id, string newData) {
 
     // Copy header
     string header;
-    if (!getline(fin, header)) {
+    if (!getline(fin, header))
+    {
         fin.close();
         fout.close();
         return;
@@ -113,16 +137,23 @@ void updateRecord(string id, string newData) {
 
     string line;
     string consumerId, name, unit;
-    while (getline(fin, line)) {
-        if (line.empty()) continue;
-        if (!parseCSVLine(line, consumerId, name, unit)) continue;
+    while (getline(fin, line))
+    {
+        if (line.empty())
+            continue;
+        if (!parseCSVLine(line, consumerId, name, unit))
+            continue;
 
-        if (consumerId == id) {
+        if (consumerId == id)
+        {
             // Match found: if newData is empty => delete; else replace
-            if (!newData.empty()) {
+            if (!newData.empty())
+            {
                 fout << newData << "\n";
             }
-        } else {
+        }
+        else
+        {
             fout << line << "\n";
         }
     }
@@ -135,18 +166,22 @@ void updateRecord(string id, string newData) {
     rename(tempFile.c_str(), CSV_FILE.c_str());
 }
 
-static void printRecordLine(const string& line) {
-    if (line.empty()) {
+static void printRecordLine(const string &line)
+{
+    if (line.empty())
+    {
         cout << "Record not found.\n";
         return;
     }
     cout << "Found record: " << line << "\n";
 }
 
-int main() {
+int main()
+{
     initializeDatabase();
 
-    while (true) {
+    while (true)
+    {
         cout << "\n=== Electricity Bill Ledger (CSV) ===\n";
         cout << "1) Write/Add Consumer\n";
         cout << "2) Search by Consumer ID\n";
@@ -155,13 +190,15 @@ int main() {
         cout << "Choose: ";
 
         int choice;
-        if (!(cin >> choice)) {
+        if (!(cin >> choice)) // checking for newline characrter or invalid characters
+        {
             cin.clear();
             cin.ignore(10000, '\n');
             continue;
         }
 
-        if (choice == 1) {
+        if (choice == 1)
+        {
             string id, name, unit;
             cout << "Enter consumer id: ";
             cin >> id;
@@ -171,7 +208,8 @@ int main() {
             cout << "Enter unit: ";
             cin >> unit;
 
-            if (!isUnique(id)) {
+            if (!isUnique(id))
+            {
                 cout << "Duplicate ID. Record not added.\n";
                 continue;
             }
@@ -179,20 +217,25 @@ int main() {
             string data = id + "," + name + "," + unit;
             appendRecord(data);
             cout << "Record added.\n";
-        } else if (choice == 2) {
+        }
+        else if (choice == 2)
+        {
             string id;
             cout << "Enter consumer id to search: ";
             cin >> id;
 
             string record = searchByID(id);
             printRecordLine(record);
-        } else if (choice == 3) {
+        }
+        else if (choice == 3)
+        {
             string id;
             cout << "Enter consumer id to update/delete: ";
             cin >> id;
 
             string existing = searchByID(id);
-            if (existing.empty()) {
+            if (existing.empty())
+            {
                 cout << "ID not found. Nothing to update/delete.\n";
                 continue;
             }
@@ -203,13 +246,15 @@ int main() {
             cout << "Choose: ";
 
             int op;
-            if (!(cin >> op)) {
+            if (!(cin >> op))
+            {
                 cin.clear();
                 cin.ignore(10000, '\n');
                 continue;
             }
 
-            if (op == 1) {
+            if (op == 1)
+            {
                 string name, unit;
                 cout << "Enter new name: ";
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -220,15 +265,23 @@ int main() {
                 string newData = id + "," + name + "," + unit;
                 updateRecord(id, newData);
                 cout << "Record updated.\n";
-            } else if (op == 2) {
+            }
+            else if (op == 2)
+            {
                 updateRecord(id, "");
                 cout << "Record deleted.\n";
-            } else {
+            }
+            else
+            {
                 cout << "Invalid option.\n";
             }
-        } else if (choice == 4) {
+        }
+        else if (choice == 4)
+        {
             break;
-        } else {
+        }
+        else
+        {
             cout << "Invalid choice.\n";
         }
     }

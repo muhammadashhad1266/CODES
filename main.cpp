@@ -20,6 +20,7 @@ bool parse(string line, string &id, string &name, string &unit);
 
 int main()
 {
+    string id;
     initializeDatabase(); // step 1: Initialization of database
 
     while (true)
@@ -28,19 +29,31 @@ int main()
         cout << "\n=== Electricity Bill Ledger (CSV) ===\n1) Write/Add Consumer\n2) Search by Consumer ID\n3) Update/Delete Consumer\n4) Exit\nChoose: ";
 
         int choice;
-        if (!(cin >> choice)) // input validation
+        if (!(cin >> choice)) // // checking for newline characrter or invalid characters
         {
-            cin.clear(); // clear warning flags
+            cin.clear();             // clear warning flags
             cin.ignore(10000, '\n'); // ignore characters in input buffer
             continue;
         }
+        if (choice == 1)
+        {
+            appendRecord();
+        }
+        else if (choice == 2)
+        {
+            searchByID();
+        }
+        else if (choice == 3)
+        {
+            updateRecord();
+        }
+        else if (choice == 4)
+        {
+            break;
+        }
     }
-
-    isUnique(id);
-
     // system("pause");
     return 0;
-}   return 0;
 }
 
 void initializeDatabase()
