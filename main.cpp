@@ -11,7 +11,7 @@ using namespace std;
 string fname = "Electricity bill ledger.csv"; // using a variable so don't need to change everywhere.
 
 const string RED = "\033[31m";  // for red colour {Errors}
-const string GREEN = "\033[32m";  // for red colour {Errors}
+const string GREEN = "\033[32m";  // for green colour
 const string RESET = "\033[0m"; // for reseting colours
 
 void initializeDatabase();    // checks file exists else create it.
@@ -315,33 +315,33 @@ bool authenticateHardwareKey() {
     dcbSerialParams.Parity = NOPARITY;
     SetCommState(hSerial, &dcbSerialParams);
 
-    // --- NEW: Set Timeouts so the program never freezes ---
+    // Set Timeouts so the program never freeze
     COMMTIMEOUTS timeouts = { 0 };
     timeouts.ReadIntervalTimeout = 50;
     timeouts.ReadTotalTimeoutConstant = 1000; // Give up after 1000ms (1 second)
     timeouts.ReadTotalTimeoutMultiplier = 10;
     SetCommTimeouts(hSerial, &timeouts);
-    // ------------------------------------------------------
+    
 
     // Wait for ESP32 to finish its automatic hardware reboot
     cout << "Waiting for ESP32 to boot..." << endl;
     Sleep(2000); 
 
-    // 1. Send 'R' to request the key
+    // Send 'R' to request the key
     DWORD bytesWritten;
     char request = 'R';
     WriteFile(hSerial, &request, 1, &bytesWritten, NULL);
 
-    Sleep(100); // Wait for ESP32 to process and respond
+    Sleep(100); // Wait for ESP32 to respond
 
-    // 2. Read the response
+    // Read the response
     char szBuff[9] = { 0 }; 
     DWORD bytesRead = 0;
     
     if (ReadFile(hSerial, szBuff, 8, &bytesRead, NULL) && bytesRead > 0) {
         string receivedKey(szBuff);
         
-        // 3. Verify the key
+        // Verify the key
         if (receivedKey == "moji@air") {
             // Success! Tell the ESP32 to flash green.
             char successMsg = 'S';
@@ -363,7 +363,7 @@ bool authenticateHardwareKey() {
         }
     }
 
-    // 4. Catch-all if ReadFile fails or times out (0 bytes read)
+    // Catch-all if ReadFile fails or times out (0 bytes read)
     cerr << RED << "[ERROR] Device did not respond. It may be locked." << RESET << endl;
     CloseHandle(hSerial);
     return false;
