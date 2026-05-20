@@ -4,14 +4,14 @@
 #include <sstream>  // for string stream
 #include <string>   // for string class
 #include <iomanip> // for output manipulation
-#include <windows.h> // for communication on the com port with esp 32
+#include <windows.h>
 
 using namespace std;
 
 string fname = "Electricity bill ledger.csv"; // using a variable so don't need to change everywhere.
 
 const string RED = "\033[31m";  // for red colour {Errors}
-const string GREEN = "\033[32m";  // for green colour {sucess}
+const string GREEN = "\033[32m";  // for green colour {Success}
 const string RESET = "\033[0m"; // for reseting colours
 
 void initializeDatabase();    // checks file exists else create it.
@@ -298,5 +298,73 @@ void DisplayCSV() // display the csv
     }
     fin.close();
 }
+bool authenticateHardwareKey() {
+    HANDLE hSerial = CreateFileA("\\\\.\\COM9", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
+    if (hSerial == INVALID_HANDLE_VALUE) {
+        cerr << "[ERROR] Hardware key not detected (COM9 unavailable)." << endl;
+        return false;
+    }
 
+    DCB dcbSerialParams = { 0 };
+    dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+    GetCommState(hSerial, &dcbSerialParams);
+    dcbSerialParams.BaudRate = CBR_115200;
+    dcbSerialParams.ByteSize = 8;
+    dcbSerialParams.StopBits = ONESTOPBIT;
+    dcbSerialParams.Parity = NOPARITY;
+    SetCommState(hSerial, &dcbSerialParams);
+
+    // Set Timeouts so the program never freeze
+    COMMTIMEOUTS timeouts = { 0 };
+    timeouts.ReadIntervalTimeout = 50;
+    timeouts.ReadTotalTimeoutConstant = 1000; // Give up after 1000ms (1 second)
+    timeouts.ReadTotalTimeoutMultiplier = 10;
+    SetCommTimeouts(hSerial, &timeouts);
+    
+
+    // Wait for ESP32 to finish its automatic hardware reboot
+    cout << "Waiting for ESP32 to boot..." << endl;
+    Sleep(2000); 
+
+    // Send 'R' to request the key
+    DWORD bytesWritten;
+    char request = 'R';
+    WriteFile(hSerial, &request, 1, &bytesWritten, NULL);
+
+    Sleep(100); // Wait for ESP32 to respond
+
+    // Read the response
+    char szBuff[9] = { 0 }; 
+    DWORD bytesRead = 0;
+    
+    if (ReadFile(hSerial, szBuff, 8, &bytesRead, NULL) && bytesRead > 0) {
+        string receivedKey(szBuff);
+        
+        // Verify the key
+        if (receivedKey == "moji@air") {
+            // Success! Tell the ESP32 to flash green.
+            char successMsg = 'S';
+            WriteFile(hSerial, &successMsg, 1, &bytesWritten, NULL);
+            
+            Sleep(700); // Give ESP32 time to flash before closing connection
+            CloseHandle(hSerial);
+            cerr << GREEN << "Access Granted" << RESET << endl;
+            return true; 
+        } else {
+            // Failed! Tell the ESP32 to turn red and lock down.
+            char failMsg = 'F';
+            WriteFile(hSerial, &failMsg, 1, &bytesWritten, NULL);
+
+            Sleep(1100); // Give ESP32 time to show red before closing connection
+            CloseHandle(hSerial);
+            cerr << RED << "[ERROR] Invalid Key Provided." << RESET << endl;
+            return false; 
+        }
+    }
+
+    // Catch-all if ReadFile fails or times out (0 bytes read)
+    cerr << RED << "[ERROR] Device did not respond. It may be locked." << RESET << endl;
+    CloseHandle(hSerial);
+    return false;
+}
