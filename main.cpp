@@ -26,18 +26,18 @@ bool authenticateHardwareKey();
 int main()
 {   cout << "Verifying Hardware Security Key on COM9..." << endl;
     
-    // The Gatekeeper: Program exits if this returns false
-    if (!authenticateHardwareKey()) {
-        cout << RED << "Access Denied. Terminating program." << RESET << endl;
-        return 1; 
-    }
+    // Program exits if this returns false
 
     string id;
-    initializeDatabase(); // step 1: Initialization of database
+    initializeDatabase(); // Initialization of database
 
     while (true)
     {
-        // step 2: user interaction {menu}
+        // user interaction {menu}
+         if (!authenticateHardwareKey()) {
+        cout << RED << "Access Denied. Terminating program." << RESET << endl;
+        break; 
+    }
         cout << "\n=== Electricity Bill Ledger (CSV) ===\n1) Write/Add Consumer\n2) Search by Consumer ID\n3) Update/Delete Consumer\n4) Display CSV\n5) Exit\nChoose: ";
 
         int choice;
@@ -299,7 +299,7 @@ void DisplayCSV() // display the csv
     fin.close();
 }
 bool authenticateHardwareKey() {
-    HANDLE hSerial = CreateFileA("\\\\.\\COM9", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hSerial = CreateFileA("\\\\.\\COM5", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     if (hSerial == INVALID_HANDLE_VALUE) {
         cerr << "[ERROR] Hardware key not detected (COM9 unavailable)." << endl;
