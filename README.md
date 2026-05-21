@@ -1,36 +1,4 @@
-```markdown
-# Electricity Bill Ledger with Hardware Security Dongle
 
-An absolute, secure console-based database ledger application written in C++ that manages electricity consumer data using a flat CSV file database. Access to the ledger is protected by a physical hardware token (an ESP32/microcontroller) using an automated challenge-response authentication mechanism over a serial (COM) port connection.
-
----
-
-## 🛠️ System Architecture
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor PC as C++ Ledger Application
-    actor Hardware as ESP32 Security Dongle
-    
-    Note over PC, Hardware: Handshake Initialization
-    PC->>Hardware: Send 'R' (Request Key)
-    Note over Hardware: State: AUTHENTICATING<br/>LED: Blinking Blue
-    Hardware->>PC: Send Secret Key ("moji@air")
-    
-    alt Key matches "moji@air"
-        PC->>Hardware: Send 'S' (Success)
-        Note over Hardware: Action: Flash Green 3x<br/>State: IDLE
-        Note over PC: Access Granted!<br/>Launches Ledger Menu
-    else Key mismatch / Timeout
-        PC->>Hardware: Send 'F' (Fail)
-        Note over Hardware: Action: Flash Red 3x<br/>State: IDLE
-        Note over PC: Access Denied!<br/>Terminates Process
-    end
-
-```
-
----
 
 ## 🚀 Features
 
@@ -110,8 +78,3 @@ When the software boots or sequences into a secure checkpoint loop:
 * If the key matches `moji@air`, the PC replies with an `'S'` signal; the dongle flashes **Green** 3 times, and database write/read operations are unlocked.
 * If invalid or timed out, the PC emits an `'F'` signal; the dongle flashes **Red** 3 times, and execution instantly terminates via an access-denied exception sequence.
 
-
-
-```
-
-```
