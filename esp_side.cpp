@@ -15,10 +15,6 @@ enum DongleState {
 
 DongleState currentState = IDLE;
 
-// Variables to track time without pausing the processor
-unsigned long lastFlashTime = 0;
-bool isBlueOn = false;
-
 void setup() {
   Serial.begin(115200);
   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
@@ -34,6 +30,8 @@ void loop() {
 
     if (incomingByte == 'R' && currentState == IDLE) {
       currentState = AUTHENTICATING;
+      leds[0] = CRGB::Blue; FastLED.show(); delay(250);
+      leds[0] = CRGB::Black; FastLED.show(); delay(500);
       Serial.print(secretKey);
     } 
     else if (incomingByte == 'S' && currentState == AUTHENTICATING) { 
@@ -53,20 +51,4 @@ void loop() {
       currentState = IDLE; // Immediately reset to listen for the next attempt
     }
   }
-
-  // --- PART B: DRIVING THE HARDWARE (Non-Blocking) ---
-  if (currentState == AUTHENTICATING) {
-    // Check if 500ms have passed since the last toggle
-    if (millis() - lastFlashTime >= 500) {
-      lastFlashTime = millis();    // Reset the stopwatch
-      isBlueOn = !isBlueOn;        // Flip the state
-      
-      if (isBlueOn) {
-        leds[0] = CRGB::Blue;
-      } else {
-        leds[0] = CRGB::Black;
-      }
-      FastLED.show();
-    }
-  } 
 }
